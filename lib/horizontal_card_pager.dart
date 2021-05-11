@@ -12,12 +12,22 @@ class HorizontalCardPager extends StatefulWidget {
   final PageSelectedCallback? onSelectedItem;
   // Set initial index
   final int initialPage;
+  final double? viewWidth;
+  final double? viewHeight;
+  final double? cardMaxWidth;
+  final double? cardMaxHeight;
+  final double horizontalSpacing;
 
   HorizontalCardPager(
       {this.items,
       this.onPageChanged,
       this.initialPage = 2,
-      this.onSelectedItem});
+      this.onSelectedItem,
+      this.viewWidth,
+      this.viewHeight,
+      this.cardMaxWidth,
+      this.cardMaxHeight,
+      this.horizontalSpacing = 1.1});
 
   @override
   _HorizontalCardPagerState createState() => _HorizontalCardPagerState();
@@ -49,11 +59,11 @@ class _HorizontalCardPagerState extends State<HorizontalCardPager> {
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraints) {
-      double viewWidth = constraints.maxWidth;
-      double viewHeight = viewWidth / 5.0;
+      double viewWidth = widget.viewWidth ?? constraints.maxWidth;
+      double viewHeight = widget.viewHeight ?? viewWidth / 5.0;
 
-      double cardMaxWidth = viewHeight;
-      double cardMaxHeight = cardMaxWidth;
+      double cardMaxWidth = widget.viewWidth ?? viewHeight;
+      double cardMaxHeight = widget.viewHeight ?? cardMaxWidth;
 
       return GestureDetector(
           onHorizontalDragEnd: (details) {
@@ -91,6 +101,7 @@ class _HorizontalCardPagerState extends State<HorizontalCardPager> {
             selectedIndex: _currentPosition,
             cardMaxHeight: cardMaxHeight,
             cardMaxWidth: cardMaxWidth,
+            horizontalSpacing: widget.horizontalSpacing,
           ));
     });
   }
@@ -103,8 +114,8 @@ class _HorizontalCardPagerState extends State<HorizontalCardPager> {
 
     for (int i = 0; i < 5; i++) {
       double cardWidth = _getCardSize(cardMaxWidth, i, 2.0);
-      double left =
-          _getStartPosition(cardWidth, cardMaxWidth, viewWidth, i, 2.0);
+      double left = _getStartPosition(
+          cardWidth, cardMaxWidth, viewWidth, i, 2.0, widget.horizontalSpacing);
 
       if (left <= dx && dx <= left + cardWidth) {
         return i;
@@ -121,6 +132,7 @@ class CardListWidget extends StatefulWidget {
   final double? viewWidth;
   final List<CardItem>? items;
   final double? selectedIndex;
+  final double horizontalSpacing;
 
   CardListWidget(
       {this.controller,
@@ -128,6 +140,7 @@ class CardListWidget extends StatefulWidget {
       this.cardMaxWidth,
       this.viewWidth,
       this.selectedIndex = 2.0,
+      this.horizontalSpacing = 1.1,
       this.items});
 
   @override
@@ -162,7 +175,7 @@ class _CardListWidgetState extends State<CardListWidget> {
           textDirection: TextDirection.ltr,
           top: _getTopPositon(cardHeight, widget.cardMaxHeight!),
           start: _getStartPosition(cardWidth, widget.cardMaxWidth,
-              widget.viewWidth!, i, selectedIndex!),
+              widget.viewWidth!, i, selectedIndex!, widget.horizontalSpacing),
           child: Opacity(
             opacity: _getOpacity(i),
             child: Container(
@@ -217,8 +230,14 @@ double _getTopPositon(double cardHeigth, double viewHeight) {
   return (viewHeight - cardHeigth) / 2;
 }
 
-double _getStartPosition(double cardWidth, double? cardMaxWidth,
-    double viewWidth, int cardIndex, double selectedIndex) {
+double _getStartPosition(
+  double cardWidth,
+  double? cardMaxWidth,
+  double viewWidth,
+  int cardIndex,
+  double selectedIndex,
+  double spacing,
+) {
   double diff = (selectedIndex - cardIndex);
   double diffAbs = diff.abs();
 
@@ -229,18 +248,18 @@ double _getStartPosition(double cardWidth, double? cardMaxWidth,
   }
   if (diffAbs > 0.0 && diffAbs <= 1.0) {
     if (diff >= 0) {
-      return basePosition - (cardMaxWidth! * 1.1) * diffAbs;
+      return basePosition - (cardMaxWidth! * spacing) * diffAbs;
     } else {
-      return basePosition + (cardMaxWidth! * 1.1) * diffAbs;
+      return basePosition + (cardMaxWidth! * spacing) * diffAbs;
     }
   } else if (diffAbs > 1.0 && diffAbs < 2.0) {
     if (diff >= 0) {
       return basePosition -
-          (cardMaxWidth! * 1.1) -
+          (cardMaxWidth! * spacing) -
           cardMaxWidth * 0.9 * (diffAbs - diffAbs.floor()).abs();
     } else {
       return basePosition +
-          (cardMaxWidth! * 1.1) +
+          (cardMaxWidth! * spacing) +
           cardMaxWidth * 0.9 * (diffAbs - diffAbs.floor()).abs();
     }
   } else {
