@@ -17,6 +17,7 @@ class HorizontalCardPager extends StatefulWidget {
   final double? cardMaxWidth;
   final double? cardMaxHeight;
   final double horizontalSpacing;
+  final EdgeInsets padding;
 
   HorizontalCardPager(
       {this.items,
@@ -27,6 +28,7 @@ class HorizontalCardPager extends StatefulWidget {
       this.viewHeight,
       this.cardMaxWidth,
       this.cardMaxHeight,
+      this.padding = const EdgeInsets.all(0),
       this.horizontalSpacing = 1.1});
 
   @override
@@ -62,8 +64,10 @@ class _HorizontalCardPagerState extends State<HorizontalCardPager> {
       double viewWidth = widget.viewWidth ?? constraints.maxWidth;
       double viewHeight = widget.viewHeight ?? viewWidth / 5.0;
 
-      double cardMaxWidth = widget.viewWidth ?? viewHeight;
-      double cardMaxHeight = widget.viewHeight ?? cardMaxWidth;
+      double cardMaxWidth =
+          widget.cardMaxWidth ?? widget.viewWidth ?? viewHeight;
+      double cardMaxHeight =
+          widget.cardMaxHeight ?? widget.viewHeight ?? cardMaxWidth;
 
       return GestureDetector(
           onHorizontalDragEnd: (details) {
@@ -102,6 +106,7 @@ class _HorizontalCardPagerState extends State<HorizontalCardPager> {
             cardMaxHeight: cardMaxHeight,
             cardMaxWidth: cardMaxWidth,
             horizontalSpacing: widget.horizontalSpacing,
+            padding: widget.padding,
           ));
     });
   }
@@ -133,6 +138,7 @@ class CardListWidget extends StatefulWidget {
   final List<CardItem>? items;
   final double? selectedIndex;
   final double horizontalSpacing;
+  final EdgeInsets padding;
 
   CardListWidget(
       {this.controller,
@@ -141,6 +147,7 @@ class CardListWidget extends StatefulWidget {
       this.viewWidth,
       this.selectedIndex = 2.0,
       this.horizontalSpacing = 1.1,
+      this.padding = const EdgeInsets.all(0),
       this.items});
 
   @override
@@ -178,7 +185,7 @@ class _CardListWidgetState extends State<CardListWidget> {
               widget.viewWidth!, i, selectedIndex!, widget.horizontalSpacing),
           child: Opacity(
             opacity: _getOpacity(i),
-            child: Container(
+            child: Container(margin: widget.padding,
               child: Center(
                 child: widget.items![i]
                     .buildWidget((i.toDouble() - selectedIndex!).abs()),
@@ -193,7 +200,7 @@ class _CardListWidgetState extends State<CardListWidget> {
 
     return Stack(children: [
       Container(
-        height: widget.cardMaxHeight,
+        height: widget.cardMaxHeight!*1.1,
         child: Stack(
           children: cardList,
         ),
